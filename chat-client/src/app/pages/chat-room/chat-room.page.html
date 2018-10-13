@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start" defaultHref="/select-room"></ion-back-button> <!--1-->
+    <ion-title>
+      Room: {{room.name}} <!--2-->
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row *ngFor="let message of messages">
+
+      <ion-col size="9" *ngIf="message.owner.nickname !== nickname" class="message"
+               [ngClass]="{
+                 'my_message': message.owner.nickname === nickname,
+                 'other_message': message.owner.nickname !== nickname
+                }"> <!--3-->
+        <span class="user_name">{{ message.owner.nickname }}:</span><br>
+        <span>{{ message.text }}</span>
+        <div class="time">{{message.created | date:'dd.MM hh:MM'}}</div>
+      </ion-col>
+
+      <ion-col offset="3" size="9" *ngIf="message.owner.nickname === nickname" class="message"
+               [ngClass]="{
+                 'my_message': message.owner.nickname === nickname,
+                 'other_message': message.owner.nickname !== nickname
+               }">
+        <span class="user_name">{{ message.owner.nickname }}:</span><br>
+        <span>{{ message.text }}</span>
+        <div class="time">{{message.created | date:'dd.MM hh:mm'}}</div>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
+
+<ion-footer>
+  <ion-item>
+    <ion-input type="text" placeholder="Message..." [(ngModel)]="message"></ion-input>
+    <ion-button fill="clear" color="primary" slot="end" (click)="sendMessage()" [disabled]="!message" size="large">
+      <ion-icon name="send"></ion-icon>
+    </ion-button>
+  </ion-item>
+</ion-footer>

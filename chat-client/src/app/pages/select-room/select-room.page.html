@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start" defaultHref="/home"></ion-back-button>
+    <ion-title>Select Room</ion-title>
+  </ion-toolbar>
+  <ion-toolbar primary>
+    <ion-searchbar ngModel (ngModelChange)="searchRoom($event)" autocorrect="off"></ion-searchbar> <!--1-->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <ion-item *ngFor="let room of rooms" (click)="joinRoom(room)"> <!--2-->
+      <ion-label>{{room.name}}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
+
+<ion-footer>
+  <ion-item>
+    <ion-input type="text" placeholder="Add Room" [(ngModel)]="roomName" name="roomName"></ion-input> <!--3-->
+    <ion-button (click)="addRoom()" [disabled]="!roomName" fill="clear" size="large" slot="end">
+      <ion-icon name="add"></ion-icon>
+    </ion-button>
+  </ion-item>
+</ion-footer>

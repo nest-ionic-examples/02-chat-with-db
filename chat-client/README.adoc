@@ -1,0 +1,126 @@
+== Ionic Application
+
+In the previous tutorial inside our Ionic chat app we created 2 screens: On the first screen we picked a name and *join the chat*, on the second screen is the actual *chatroom with messages*. In this tutorial we are going to modify the first screen so after setting the nickname we go to another page where we select the chat room from a list, and then in the last screen we will only show messages for that specified chat room.
+
+=== Adding Models
+
+Before continue it is good idea to add the models to our app, so create next files:
+
+.src/app/models/message.ts
+[source,ts,options="nowrap]
+----
+include::src/app/models/message.ts[]
+----
+
+.src/app/models/room.ts
+[source,ts,options="nowrap]
+----
+include::src/app/models/room.ts[]
+----
+
+.src/app/models/user.ts
+[source,ts,options="nowrap]
+----
+include::src/app/models/user.ts[]
+----
+
+As you can see those files are only interfaces that have the same attributes as the server entities.
+
+NOTE: Even though there is a way to put this models in a separate library and share this library between the server and client we are not going to do it in this tutorial.
+
+=== Joining a Chatroom
+
+So now we need to add a way to select the chat room after setting the nickname. To do that we should modify the file `src/app/pages/home/home.ts` with the next code:
+
+[source,ts,options="nowrap"]
+----
+include::src/app/pages/home/home.page.ts[]
+----
+<1> instead setting the nickname in the url-path we save it into the local storage variable so we can use it later.
+<2> we redirect the user to the `select-room` page
+
+The template file will be the same, so you can keep the next code:
+
+[source,html,options="nowrap"]
+----
+include::src/app/pages/home/home.page.html[]
+----
+
+=== Building the Room Selection Functionality
+
+In this page the user will select the chat room he will join, so we need a selection list and a filter box. The first step will be to create the page running next command:
+
+
+```sh
+ionic g page pages/select-room
+```
+
+then we modify `select-room.page.html` to contain next code:
+
+[source,html,options="nowrap"]
+----
+include::src/app/pages/select-room/select-room.page.html[]
+----
+<1> In the header we show the title and a search-box which executes the method `searchRoom` whenever user types-in and the debounce time has elapsed.
+<2> The content shows the list of rooms filtered by the search box. Whenever the user clicks on any of the items of the list, it will be redirected to the `chat-room` page.
+<3> The footer contains a text-box that receive the name of a new chat-room and a plus button which executes the method `addRoom`.
+
+Before modifying the `select-room.page.ts` file, it will be needed to add the `debounce-decorator-ts` package. To do it, run next command at the root directory of `chat-client` app:
+
+```
+npm i -s debounce-decorator-ts
+```
+
+then we modify `select-room.page.ts` to contain next code:
+
+[source,html,options="nowrap"]
+----
+include::src/app/pages/select-room/select-room.page.ts[]
+----
+<1> In the `constructor` we inject
+<2> In the `ngOnInit` method we search for all the rooms
+<3> The `searchRoom` method is in charge of searching for rooms in dependence of the parameter `q`. This method calls `roomsService.find` method passing parameter `q` to it. After receiving the rooms list, it fills a local public array to be used by the html template.
+<4> The `joinRoom` method navigates to `chat-room/:id`. That `id` parameter is later used in the `chat-room` page.
+<5> The `addRoom` method calls `roomsService.save` method which sends the information of the new room to the server. After saving the value, it receives the new value and adds it to the `rooms` local public variable.
+
+=== Modifying the Chat Functionality
+
+To receive new chat messages inside the room we have to listen for `message` socket event which receive the messages from the server.
+
+Whenever we get such a message we simply push the new message to an array of messages. Remember, since now we have a database to save historic data, we are going to load it.
+
+Sending a new message is almost the same as before, we simply emit our event to the server with the right type.
+
+Finally, we also listen to the events of users joining and leaving the room and display a little toast whenever someone comes in or leaves the room. It’s the same logic again, with the `socket.on()` we can listen to all the events broadcasted from our server!
+
+Go ahead and modify `chat-room.ts`:
+
+[source,ts,options="nowrap"]
+----
+include::src/app/pages/chat-room/chat-room.page.ts[]
+----
+<1> We import models and services
+<2> We inject services `MessagesService` and `RoomsService` in the constructor
+<3> Instead getting `nickname` from url, we now get it from `sessionStorage`.
+<4> We get the roomId from the value coming from the route path param.
+<5> We emit that the user has entered to the chat-room.
+<6> Then we get the full information of the chat-room using `roomsService.findById` method.
+<7> After receiving the full chat-room info, we set it in a local public variable to be accessible to the html template.
+<8> Then we find all the messages of the chat-room using query: `{where: JSON.stringify({room: this.room._id})}`
+<9> After getting all the messages of the chat-room, we set them in a local public array to be accessible to the html template.
+<10> In the `ngOnDestroy` method we need to unsubscribe all the subscriptions, remove listeners for `socket.io` events, and emit `leave-chat-room` event so the server can know when a user has left the room. This method is always call whenever the user goes back using the back button.
+<11> We emit the `add-message` event with the message text and the room id.
+
+And also `chat-room.html`:
+
+[source,html,options="nowrap"]
+----
+include::src/app/pages/chat-room/chat-room.page.html[]
+----
+<1> we have to go back to `select-room` page instead `home` page
+<2> Instead of just showing `Chat` in the header, we now show `Room: <room-name>`.
+<3> now we compare `message.owner.nickname` instead comparing `message.from`
+
+Now launch your app and make sure your backend is up and running!
+
+For testing, you can open a browser and another incognito browser like in my example at the top to chat with yourself.

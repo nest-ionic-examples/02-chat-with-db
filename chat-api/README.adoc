@@ -1,0 +1,168 @@
+== Nest Application
+
+=== Database Setup
+
+In this tutorial we are going to use MongoDb as database however you could use another database with some little tweaks. We are going to explore two ways to add MongoDb locally.
+
+==== Brew Installation
+
+The first one is by using https://brew.sh/[brew] or http://linuxbrew.sh/[linuxbrew], so you could run:
+
+```sh
+brew install mongodb
+```
+
+then you could just start it running
+
+```sh
+brew services start mongo
+```
+
+Then start the mongo shell pointing to the `chat` database:
+
+```sh
+mongo chat
+```
+
+After you start the mongo-shell you need to add user `chat-admin`, set password `password123` and add the role `dbAdmin` for `chat` database. so run next commands in the console:
+
+[source,sh,options="nowrap"]
+----
+db.createUser({user: 'chat-admin', pwd: 'password123', roles: [{role: 'dbAdmin', db: 'chat'}]})
+----
+
+then you are going to get something like next:
+
+[source,sh,options=nowrap"]
+----
+Successfully added user: {
+        "user" : "chat-admin",
+        "roles" : [
+                {
+                        "role" : "dbAdmin",
+                        "db" : "chat"
+                }
+        ]
+}
+----
+
+then just press combination `ctrl + C` to stop mongo shell.
+
+[NOTE]
+====
+If you want to start another instance of mongodb in the same port for example with `docker-compose` then you need to stop this one, so you could run:
+
+```sh
+brew services stop mongo
+```
+====
+
+
+==== Docker Compose Setup
+
+The second way is to use https://www.docker.com/get-started[docker] and https://docs.docker.com/compose/gettingstarted/[docker-compose]. To do that we need to create a `docker-compose.yaml` file and add next code:
+
+[source,yaml,options="nowrap"]
+----
+include::docker-compose.yaml[]
+----
+<1> whenever we run `docker-compose up mongo` the database will run and listen on port `27017`.
+<2> We create a virtual volume from `docker-compose-files` folder created in the host machine and share it inside the container as `docker-entrypoint-initdb.d`. In this folder we will put initialization scripts to start the database with preloaded data.
+<3> We set the default database that will be used by the application
+
+As you can see in the previous file `docker-compose` needs initialization files to start the database, so we will create file `docker-compose-files/initdbs.js` which will contain the initialization script. Then add next code to it:
+
+[source,yaml,options="nowrap"]
+----
+include::docker-compose-files/initdbs.js[]
+----
+<1> creates a new user `chat-admin`, sets password `password123` and add the role `dbAdmin` for `chat` database.
+
+There are several advantages of using `docker-compose` over local `brew` installation:
+
+1. We can create a new MongoDB database for every project without affecting others.
+2. We could destroy the database data just running: `docker-compose down -v` and restart it running `docker-compose up mongo`. This is very important for integration testing.
+3. We can specify NodeJs and MongoDB version we are working, so others just need to run `docker-compose up mongo` to have the same environment as us.
+
+=== Typegoose
+
+In order to add support for mongodb database, Nest comes with the ready to use `nestjs-typegoose` package. This is one of the most mature available so far. Since it's written in TypeScript, it works pretty well with the Nest framework.
+
+Firstly, we need to install all of the required dependencies:
+
+[source,sh,options="nowrap"]
+----
+npm i -s nestjs-typegoose typegoose mongoose @types/mongoose mongodb
+----
+
+Once the installation process is completed, we can import the `TypegooseModule` into the root `ApplicationModule`.
+
+[source,ts,options="nowrap"]
+----
+include::src/app.module.ts[]
+----
+<1> Import `TypegooseModule` from `nestjs-typegoose` package
+<2> Add `TypegooseModule` configurations for mongo database connection
+<3> Add models to `TypegooseModule` so they can be injected later in the application components
+
+Now we need to create three models `Message`, `Room`, and `User`.
+
+.src/models/message.model.ts
+[source,ts,options="nowrap"]
+----
+include::src/models/message.model.ts[]
+----
+
+.src/models/room.model.ts
+[source,ts,options="nowrap"]
+----
+include::src/models/room.model.ts[]
+----
+
+.src/models/user.model.ts
+[source,ts,options="nowrap"]
+----
+include::src/models/user.model.ts[]
+----
+=== Modify Gateways and Controllers
+
+After that we need to modify `messages.gateway.ts`, so we inject each db model:
+
+[source,ts,options="nowrap"]
+----
+include::src/gateways/messages/messages.gateway.ts[]
+----
+<1> Inject typegoose models for: `Message`, `Room`, and `User`.
+<2> Handles user disconnection, it sends an event that the user is disconnected.
+<3> Handles subscription to `enter-chat-room` event, which is in charge of adding user to a chat room, if the user doesn't exist then create a new one.
+<4> Handles subscription to `leave-chat-room` event, which remove user from the chat room and emits `users-changed` event to all users of the chat-room
+<5> Handles subscription to `add-message` event, which is in charge of adding messages coming from users in the chat room
+
+Then we need to modify `rooms.controller.ts`, so we inject `Room` model into it:
+
+[source,ts,options="nowrap"]
+----
+include::src/controllers/rooms/rooms.controller.ts[]
+----
+<1> Inject `Room` typegoose model
+<2> Handles `GET` request for `api/rooms`. This request could contains a query parameter called `q`. This could contain a partial `room.name` value so users can query to the database with values that matches the partial value. If the query parameter is not present then it will return the full list of rooms.
+<3> Handles `GET` request for `api/rooms/:id`. Finds and returns the full information of the room matching that `id`.
+<4> Handles the `POST` request for `api/rooms`. If the item contains an `_id` value, it updates any previous created room. if not, it creates a new room with the passed values. Finally, it returns the saved value to the client.
+
+Finally we need to add `messages.controller.ts` containing next code:
+
+[source,ts,options="nowrap"]
+----
+include::src/controllers/messages/messages.controller.ts[]
+----
+<1> Inject `Message` model
+<2> Handles `GET` request for `api/messages`. This request could contains a query parameter called `where`. This could contain any query so users can query to the database with values that matches it, for example `{owner: {_id: '123'}}`. If the `where` query parameter is not present then it will return the full list of rooms.
+
+[IMPORTANT]
+====
+At the moment queries of controllers does not have any validation so it's pretty dangerous to use it like that.
+
+Also Gateway and Controllers need an authentication and permission system so only users with needed permissions can access and modify data.
+
+In next tutorials I will add a better handling of it.
+====

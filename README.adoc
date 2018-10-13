@@ -1,0 +1,47 @@
+= Simple Chat example using Ionic, Nest and Socket.IO
+:source-highlighter: highlightjs
+:highlightjsdir: .
+:nofooter:
+:icons: font
+
+****
+documentation: https://nest-ionic-examples.github.io/02-chat-with-db/
+
+source code: https://github.com/nest-ionic-examples/02-chat-with-db
+****
+
+In https://nest-ionic-examples.github.io/01-simple-chat[previous tutorial] we created a simple chat application, in this tutorial we are going to add support for MongoDb database to store messages, users and rooms.
+
+image::chat-demo.gif[]
+
+include::chat-api/README.adoc[]
+
+include::chat-client/README.adoc[]
+
+== Conclusion
+
+As you can see adding MongoDB to our project was relatively simple. Furthermore, `typegoose` give us the huge ability to connect and handle the database without writing too much code.
+
+Now this application looks more real since we can store all the messages, rooms, and users in our database. This leads to the fact that now we can create different chat-rooms with separate conversations.
+
+To finish I just want to point that we need to add some sort of authentication and authorization system. So that, only users with required permissions can access rooms and messages. We will do that in next tutorials.
+
+== Comments
+
+++++
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'https://nest-ionic-examples.github.io/02-simple-chat/';
+  this.page.identifier = '02-simple-chat';
+};
+
+(function() { // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = 'https://02-simple-chat.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+++++
