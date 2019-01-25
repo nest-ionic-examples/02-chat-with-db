@@ -7,8 +7,6 @@
 :prev_section: 01-simple-chat
 
 ****
-documentation: https://nest-ionic-examples.github.io/02-chat-with-db/
-
 source code: https://github.com/nest-ionic-examples/02-chat-with-db
 ****
 
