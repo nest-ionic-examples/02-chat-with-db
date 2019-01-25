@@ -4,6 +4,15 @@
 
 In this tutorial we are going to use MongoDb as database however you could use another database with some little tweaks. We are going to explore two ways to add MongoDb locally.
 
+[NOTE]
+====
+Before continue with this part, in the console go to `chat-qpi` folder:
+
+```sh
+cd chat-api
+```
+====
+
 ==== Brew Installation
 
 The first one is by using https://brew.sh/[brew] or http://linuxbrew.sh/[linuxbrew], so you could run:
@@ -50,7 +59,7 @@ then just press combination `ctrl + C` to stop mongo shell.
 
 [NOTE]
 ====
-If you want to start another instance of mongodb in the same port for example with `docker-compose` then you need to stop this one, so you could run:
+If you want to start another instance of mongodb in the same port, for example with `docker-compose`, then you need to stop this one. Hence, you could run:
 
 ```sh
 brew services stop mongo
@@ -60,7 +69,7 @@ brew services stop mongo
 
 ==== Docker Compose Setup
 
-The second way is to use https://www.docker.com/get-started[docker] and https://docs.docker.com/compose/gettingstarted/[docker-compose]. To do that we need to create a `docker-compose.yaml` file and add next code:
+The second way is to use https://www.docker.com/get-started[docker] and https://docs.docker.com/compose/gettingstarted/[docker-compose]. To do that, we need to create a `docker-compose.yaml` file and add next code:
 
 [source,yaml,options="nowrap"]
 ----
@@ -99,7 +108,7 @@ Once the installation process is completed, we can import the `TypegooseModule` 
 
 [source,ts,options="nowrap"]
 ----
-include::src/app.module.ts[]
+include::src/app.module.ts[tags=!*]
 ----
 <1> Import `TypegooseModule` from `nestjs-typegoose` package
 <2> Add `TypegooseModule` configurations for mongo database connection
@@ -149,7 +158,13 @@ include::src/controllers/rooms/rooms.controller.ts[]
 <3> Handles `GET` request for `api/rooms/:id`. Finds and returns the full information of the room matching that `id`.
 <4> Handles the `POST` request for `api/rooms`. If the item contains an `_id` value, it updates any previous created room. if not, it creates a new room with the passed values. Finally, it returns the saved value to the client.
 
-Finally we need to add `messages.controller.ts` containing next code:
+Finally we need to add `messages.controller.ts`. To do that you should run:
+
+```
+nest g co controllers/messages
+```
+
+Then modify `messages.controller.ts` with next code:
 
 [source,ts,options="nowrap"]
 ----

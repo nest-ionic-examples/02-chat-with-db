@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Simple Chat example using Ionic, Nest and Socket.IO</title>
+<title>Simple Chat example using Ionic, Nest, Socket.IO and MongoDB</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -431,9 +431,31 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body class="article toc2 toc-left">
 <div id="header">
-<h1>Simple Chat example using Ionic, Nest and Socket.IO</h1>
+<h1>Simple Chat example using Ionic, Nest, Socket.IO and MongoDB</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_nest_application">Nest Application</a>
+<ul class="sectlevel2">
+<li><a href="#_database_setup">Database Setup</a></li>
+<li><a href="#_typegoose">Typegoose</a></li>
+<li><a href="#_modify_gateways_and_controllers">Modify Gateways and Controllers</a></li>
+</ul>
+</li>
+<li><a href="#_ionic_application">Ionic Application</a>
+<ul class="sectlevel2">
+<li><a href="#_adding_models">Adding Models</a></li>
+<li><a href="#_joining_a_chatroom">Joining a Chatroom</a></li>
+<li><a href="#_building_the_room_selection_functionality">Building the Room Selection Functionality</a></li>
+<li><a href="#_modifying_the_chat_functionality">Modifying the Chat Functionality</a></li>
+</ul>
+</li>
+<li><a href="#_conclusion">Conclusion</a></li>
+<li><a href="#_comments">Comments</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
 <div id="preamble">
@@ -465,6 +487,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h3 id="_database_setup">Database Setup</h3>
 <div class="paragraph">
 <p>In this tutorial we are going to use MongoDb as database however you could use another database with some little tweaks. We are going to explore two ways to add MongoDb locally.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Before continue with this part, in the console go to <code>chat-qpi</code> folder:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">cd chat-api</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sect3">
 <h4 id="_brew_installation">Brew Installation</h4>
@@ -527,7 +568,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </td>
 <td class="content">
 <div class="paragraph">
-<p>If you want to start another instance of mongodb in the same port for example with <code>docker-compose</code> then you need to stop this one, so you could run:</p>
+<p>If you want to start another instance of mongodb in the same port, for example with <code>docker-compose</code>, then you need to stop this one. Hence, you could run:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -542,7 +583,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect3">
 <h4 id="_docker_compose_setup">Docker Compose Setup</h4>
 <div class="paragraph">
-<p>The second way is to use <a href="https://www.docker.com/get-started">docker</a> and <a href="https://docs.docker.com/compose/gettingstarted/">docker-compose</a>. To do that we need to create a <code>docker-compose.yaml</code> file and add next code:</p>
+<p>The second way is to use <a href="https://www.docker.com/get-started">docker</a> and <a href="https://docs.docker.com/compose/gettingstarted/">docker-compose</a>. To do that, we need to create a <code>docker-compose.yaml</code> file and add next code:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -634,7 +675,6 @@ services:
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MessagesGateway } from './gateways/messages/messages.gateway';
-import { MessagesController } from './controllers/messages/messages.controller';
 import { RoomsController } from './controllers/rooms/rooms.controller';
 import { TypegooseModule } from 'nestjs-typegoose'; <i class="conum" data-value="1"></i><b>(1)</b>
 import { Message } from './models/message.model';
@@ -646,7 +686,10 @@ import { User } from './models/user.model';
     TypegooseModule.forRoot('mongodb://chat-admin:password123@localhost/chat', {}), <i class="conum" data-value="2"></i><b>(2)</b>
     TypegooseModule.forFeature(Message, Room, User), <i class="conum" data-value="3"></i><b>(3)</b>
   ],
-  controllers: [AppController, RoomsController, MessagesController],
+  controllers: [
+    AppController,
+    RoomsController,
+  ],
   providers: [AppService, MessagesGateway],
 })
 export class AppModule {}</code></pre>
@@ -880,7 +923,15 @@ export class RoomsController {
 </table>
 </div>
 <div class="paragraph">
-<p>Finally we need to add <code>messages.controller.ts</code> containing next code:</p>
+<p>Finally we need to add <code>messages.controller.ts</code>. To do that you should run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>nest g co controllers/messages</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then modify <code>messages.controller.ts</code> with next code:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -940,7 +991,26 @@ export class MessagesController {
 <h2 id="_ionic_application">Ionic Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In the previous tutorial inside our Ionic chat app we created 2 screens: On the first screen we picked a name and <strong>join the chat</strong>, on the second screen is the actual <strong>chatroom with messages</strong>. In this tutorial we are going to modify the first screen so after setting the nickname we go to another page where we select the chat room from a list, and then in the last screen we will only show messages for that specified chat room.</p>
+<p>In the previous tutorial inside our Ionic chat app we created 2 screens: On the first screen we picked a name and <strong>join the chat</strong>, on the second screen we show the actual <strong>chatroom with messages</strong>. In this tutorial we are going to modify the first screen, so after setting the nickname we go to another page where we select the chat room from a list, and then in the last screen we will only show messages for that specified chat room.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Before continue with this part, in the console go to <code>chat-client</code> folder:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">cd chat-clent</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sect2">
 <h3 id="_adding_models">Adding Models</h3>

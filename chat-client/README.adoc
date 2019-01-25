@@ -1,6 +1,15 @@
 == Ionic Application
 
-In the previous tutorial inside our Ionic chat app we created 2 screens: On the first screen we picked a name and *join the chat*, on the second screen is the actual *chatroom with messages*. In this tutorial we are going to modify the first screen so after setting the nickname we go to another page where we select the chat room from a list, and then in the last screen we will only show messages for that specified chat room.
+In the previous tutorial inside our Ionic chat app we created 2 screens: On the first screen we picked a name and *join the chat*, on the second screen we show the actual *chatroom with messages*. In this tutorial we are going to modify the first screen, so after setting the nickname we go to another page where we select the chat room from a list, and then in the last screen we will only show messages for that specified chat room.
+
+[NOTE]
+====
+Before continue with this part, in the console go to `chat-client` folder:
+
+```sh
+cd chat-clent
+```
+====
 
 === Adding Models
 

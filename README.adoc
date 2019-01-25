@@ -1,8 +1,10 @@
-= Simple Chat example using Ionic, Nest and Socket.IO
+= Simple Chat example using Ionic, Nest, Socket.IO and MongoDB
 :source-highlighter: highlightjs
 :highlightjsdir: .
 :nofooter:
 :icons: font
+:toc: left
+:prev_section: 01-simple-chat
 
 ****
 documentation: https://nest-ionic-examples.github.io/02-chat-with-db/
