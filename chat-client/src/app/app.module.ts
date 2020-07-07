@@ -8,7 +8,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { SocketIoModule } from 'ng-socket-io'; // <1>
+import { SocketIoModule } from 'ngx-socket-io'; // <1>
 import { environment } from '../environments/environment';
 import { HttpClientModule } from '@angular/common/http'; // <2>
 

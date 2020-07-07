@@ -6,7 +6,7 @@ In this tutorial we are going to use MongoDb as database however you could use a
 
 [NOTE]
 ====
-Before continue with this part, in the console go to `chat-qpi` folder:
+Before continue with this part, in the console go to `chat-api` folder:
 
 ```sh
 cd chat-api

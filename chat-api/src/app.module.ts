@@ -14,7 +14,7 @@ import { User } from './models/user.model';
 @Module({
   imports: [
     TypegooseModule.forRoot('mongodb://chat-admin:password123@localhost/chat', {}), // <2>
-    TypegooseModule.forFeature(Message, Room, User), // <3>
+    TypegooseModule.forFeature([Message, Room, User]), // <3>
   ],
   controllers: [
     AppController,

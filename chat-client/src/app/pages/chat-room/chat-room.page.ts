@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Socket } from 'ng-socket-io';
+import { Socket } from 'ngx-socket-io';
 import { ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { MessagesService } from '../../services/messages.service'; // <1>
