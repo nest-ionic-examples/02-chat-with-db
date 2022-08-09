@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { InjectModel } from 'nestjs-typegoose';
 import { Message } from '../../models/message.model';
-import { ModelType } from 'typegoose';
+import {Model} from "mongoose";
+import {InjectModel} from "@nestjs/mongoose";
 
 @Controller('api/messages')
 export class MessagesController {
-  constructor(@InjectModel(Message) private readonly model: ModelType<Message>) {} // <1>
+  constructor(@InjectModel(Message.name) private readonly model: Model<Message>) {} // <1>
 
   @Get()
   find(@Query('where') where) { // <2>

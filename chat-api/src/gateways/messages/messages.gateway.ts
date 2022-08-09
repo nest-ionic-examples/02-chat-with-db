@@ -1,23 +1,27 @@
-import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { ModelType } from 'typegoose';
 import { Message } from '../../models/message.model';
 import { User } from '../../models/user.model';
 import { Room } from '../../models/room.model';
-import { InjectModel } from 'nestjs-typegoose';
+import {InjectModel} from "@nestjs/mongoose";
+import {Model} from "mongoose";
+import {Server} from "socket.io";
 
-@WebSocketGateway()
+@WebSocketGateway({cors: '*:*'})
 export class MessagesGateway implements OnGatewayDisconnect {
 
-  constructor(@InjectModel(Message) private readonly messagesModel: ModelType<Message>,
-              @InjectModel(Room) private readonly roomsModel: ModelType<Room>,
-              @InjectModel(User) private readonly usersModel: ModelType<User>) { // <1>
+  constructor(@InjectModel(Message.name) private readonly messagesModel: Model<Message>,
+              @InjectModel(Room.name) private readonly roomsModel: Model<Room>,
+              @InjectModel(User.name) private readonly usersModel: Model<User>) { // <1>
   }
+
+  @WebSocketServer()
+  server: Server;
 
   async handleDisconnect(client: Socket) { // <2>
     const user = await this.usersModel.findOne({clientId: client.id});
     if (user) {
-      client.server.emit('users-changed', {user: user.nickname, event: 'left'});
+      this.server.emit('users-changed', {user: user.nickname, event: 'left'});
       user.clientId = null;
       await this.usersModel.findByIdAndUpdate(user._id, user);
     }
@@ -32,7 +36,8 @@ export class MessagesGateway implements OnGatewayDisconnect {
       user.clientId = client.id;
       user = await this.usersModel.findByIdAndUpdate(user._id, user, {new: true});
     }
-    client.join(data.roomId).broadcast.to(data.roomId)
+    client.join(data.roomId);
+    client.broadcast.to(data.roomId)
       .emit('users-changed', {user: user.nickname, event: 'joined'}); // <3>
   }
 
@@ -48,6 +53,6 @@ export class MessagesGateway implements OnGatewayDisconnect {
     message.owner = await this.usersModel.findOne({clientId: client.id});
     message.created = new Date();
     message = await this.messagesModel.create(message);
-    client.server.in(message.room as string).emit('message', message);
+    this.server.in(message.room as string).emit('message', message);
   }
 }

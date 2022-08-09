@@ -20,7 +20,7 @@ include::chat-client/README.adoc[]
 
 == Conclusion
 
-As you can see adding MongoDB to our project was relatively simple. Furthermore, `typegoose` give us the huge ability to connect and handle the database without writing too much code.
+As you can see adding MongoDB to our project was relatively simple. Furthermore, `@nestjs/mongoose` give us the huge ability to connect and handle the database without writing too much code.
 
 Now this application looks more real since we can store all the messages, rooms, and users in our database. This leads to the fact that now we can create different chat-rooms with separate conversations.
 

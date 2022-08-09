@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Room } from '../../models/room.model';
-import { ModelType } from 'typegoose';
-import { InjectModel } from 'nestjs-typegoose';
+import {Model} from "mongoose";
+import {InjectModel} from "@nestjs/mongoose";
 
 @Controller('api/rooms')
 export class RoomsController {
-  constructor(@InjectModel(Room) private readonly model: ModelType<Room>) {} // <1>
+  constructor(@InjectModel(Room.name) private readonly model: Model<Room>) {} // <1>
 
   @Get()
   find(@Query('q') q) { // <2>
@@ -20,6 +20,8 @@ export class RoomsController {
 
   @Post()
   save(@Body() item: Room) { // <4>
-    return item._id ? this.model.findByIdAndUpdate(item._id, item, {new: true}) : this.model.create(item);
+    return item._id
+      ? this.model.findByIdAndUpdate(item._id, item, {new: true})
+      : this.model.create(item);
   }
 }

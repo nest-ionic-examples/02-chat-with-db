@@ -6,15 +6,19 @@ import { MessagesGateway } from './gateways/messages/messages.gateway';
 import { MessagesController } from './controllers/messages/messages.controller';
 // end::import-messages-controller[]
 import { RoomsController } from './controllers/rooms/rooms.controller';
-import { TypegooseModule } from 'nestjs-typegoose'; // <1>
-import { Message } from './models/message.model';
-import { Room } from './models/room.model';
-import { User } from './models/user.model';
+import { MongooseModule } from "@nestjs/mongoose"; // <1>
+import { Message, MessageSchema } from './models/message.model';
+import { Room, RoomSchema } from './models/room.model';
+import { User, UserSchema } from './models/user.model';
 
 @Module({
   imports: [
-    TypegooseModule.forRoot('mongodb://chat-admin:password123@localhost/chat', {}), // <2>
-    TypegooseModule.forFeature([Message, Room, User]), // <3>
+    MongooseModule.forRoot('mongodb://chat-admin:password123@localhost/chat', {}), // <2>
+    MongooseModule.forFeature([
+      {name: Message.name, schema: MessageSchema},
+      {name: Room.name, schema: RoomSchema},
+      {name: User.name, schema: UserSchema}
+    ]), // <3>
   ],
   controllers: [
     AppController,
@@ -25,4 +29,5 @@ import { User } from './models/user.model';
   ],
   providers: [AppService, MessagesGateway],
 })
-export class AppModule {}
+export class AppModule {
+}

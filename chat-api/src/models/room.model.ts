@@ -1,15 +1,21 @@
-import { Message } from './message.model';
-import { User } from './user.model';
-import { prop, Ref, Typegoose } from 'typegoose';
-import { ObjectID } from 'bson';
+import {Message} from './message.model';
+import {User} from './user.model';
+import {ObjectID} from 'bson';
+import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Types} from "mongoose";
 
-export class Room extends Typegoose {
+@Schema()
+export class Room {
   _id: ObjectID | string;
 
-  @prop({required: true, maxlength: 20, minlength: 5})
+  @Prop({required: true, maxlength: 20, minlength: 5})
   name: string;
 
-  messages: Ref<Message[]>;
+  @Prop({type: [{type: Types.ObjectId, ref: 'Message'}]})
+  messages: Message[];
 
-  connectedUsers: Ref<User[]>;
+  @Prop({type: [{type: Types.ObjectId, ref: 'User'}]})
+  connectedUsers: User[];
 }
+
+export const RoomSchema = SchemaFactory.createForClass(Room)
