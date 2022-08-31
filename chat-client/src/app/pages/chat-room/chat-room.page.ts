@@ -45,7 +45,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
     this.socket.on('users-changed', data => {
       const user = data.user;
-      if (data['event'] === 'left') {
+      if (data.event === 'left') {
         this.showToast('User left: ' + user);
       } else {
         this.showToast('User joined: ' + user);

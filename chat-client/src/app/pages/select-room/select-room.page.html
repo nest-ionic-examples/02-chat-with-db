@@ -3,12 +3,12 @@
     <ion-back-button slot="start" defaultHref="/home"></ion-back-button>
     <ion-title>Select Room</ion-title>
   </ion-toolbar>
-  <ion-toolbar primary>
+  <ion-toolbar color="primary">
     <ion-searchbar ngModel (ngModelChange)="searchRoom($event)" autocorrect="off"></ion-searchbar> <!--1-->
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content class="ion-padding">
   <ion-list>
     <ion-item *ngFor="let room of rooms" (click)="joinRoom(room)"> <!--2-->
       <ion-label>{{room.name}}</ion-label>

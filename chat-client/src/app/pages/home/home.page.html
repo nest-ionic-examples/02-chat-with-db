@@ -6,10 +6,10 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content class="ion-padding">
   <ion-item>
-    <ion-label stacked>Set Nickname</ion-label>
+    <ion-label position="stacked">Set Nickname</ion-label>
     <ion-input type="text" [(ngModel)]="nickname" placeholder="Nickname"></ion-input>
   </ion-item>
-  <ion-button full (click)="joinChat()" [disabled]="!nickname">Join Chat as {{ nickname }}</ion-button>
+  <ion-button expand="full" (click)="joinChat()" [disabled]="!nickname">Join Chat as {{ nickname }}</ion-button>
 </ion-content>

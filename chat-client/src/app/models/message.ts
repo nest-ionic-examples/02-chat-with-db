@@ -6,4 +6,5 @@ export interface Message {
   text?: string;
   owner?: User | string;
   room?: Room | string;
+  created?: Date | string;
 }
